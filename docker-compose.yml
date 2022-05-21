@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: php-fpm/Dockerfile
+    container_name: deeper-php
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - ./php-fpm/conf/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - deeper-network
+  
+  web:
+    image: nginx:1.20.2-alpine
+    container_name: deeper-nginx
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./:/var/www
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+      - ./nginx/logs/nginx:/var/log/nginx
+    networks:
+      - deeper-network
+
+networks:
+  deeper-network:
+    driver: bridge
